@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>占城大师</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 开始界面 -->
+        <div id="start-screen" class="screen active">
+            <h1>占城大师</h1>
+            <p>选择你的种族</p>
+            <div class="race-grid" id="race-selection"></div>
+        </div>
+        
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="player-info">
+                    <span class="label" id="player-race-name">🏰 我方主城</span>
+                    <div class="health-bar">
+                        <div id="player-hp" class="hp-fill"></div>
+                    </div>
+                    <span id="player-hp-text">100%</span>
+                    <span class="gold-label">💰 <span id="player-gold">100</span></span>
+                </div>
+                <div class="vs">VS</div>
+                <div class="enemy-info">
+                    <span class="gold-label">💰 <span id="enemy-gold">100</span></span>
+                    <span>敌方主城 🏰</span>
+                    <div class="health-bar enemy">
+                        <div id="enemy-hp" class="hp-fill"></div>
+                    </div>
+                    <span id="enemy-hp-text">100%</span>
+                </div>
+            </div>
+            
+            <div class="map-container" id="map-container">
+                <div id="map-grid"></div>
+            </div>
+            
+            <div class="control-panel">
+                <div id="unit-info" class="unit-info">
+                    <p>💡 点击下方格子花费20金币招募士兵</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="game-over" class="overlay">
+            <div class="result-content">
+                <h2 id="result-text"></h2>
+                <button id="restart-btn">重新开始</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
