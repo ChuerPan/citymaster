@@ -45,7 +45,7 @@ body {
     font-size: 1.2rem;
 }
 
-#start-screen button, #restart-btn, .end-turn-btn {
+#start-screen button, #restart-btn {
     padding: 1rem 3rem;
     font-size: 1.2rem;
     background: linear-gradient(145deg, #60a5fa, #3b82f6);
@@ -57,7 +57,7 @@ body {
     transition: all 0.3s ease;
 }
 
-#start-screen button:hover, #restart-btn:hover, .end-turn-btn:hover:not(.disabled) {
+#start-screen button:hover, #restart-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
 }
@@ -71,20 +71,20 @@ body {
     border-bottom: 2px solid rgba(100, 200, 255, 0.3);
 }
 
-.player-info, .enemy-info, .turn-info {
+.player-info, .enemy-info, .vs {
     display: flex;
     align-items: center;
     gap: 1rem;
     color: #fff;
 }
 
-.turn-info {
+.vs {
     font-size: 1.5rem;
     font-weight: bold;
 }
 
 .health-bar {
-    width: 150px;
+    width: 120px;
     height: 20px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
@@ -101,13 +101,19 @@ body {
     background: linear-gradient(90deg, #f87171, #ef4444);
 }
 
+.gold-label {
+    color: #fbbf24;
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
 .map-container {
     flex: 1;
     overflow: auto;
     padding: 1rem;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 #map-grid {
@@ -118,8 +124,8 @@ body {
 }
 
 .cell {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,6 +162,14 @@ body {
     background: linear-gradient(145deg, #ef4444, #b91c1c);
 }
 
+.cell.player_mine {
+    background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+}
+
+.cell.enemy_mine {
+    background: linear-gradient(145deg, #ec4899, #db2777);
+}
+
 .cell.selected {
     box-shadow: inset 0 0 0 3px #fbbf24;
 }
@@ -165,7 +179,7 @@ body {
 }
 
 .cell-icon {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     position: relative;
     z-index: 1;
 }
@@ -175,7 +189,7 @@ body {
     bottom: 1px;
     left: 1px;
     right: 1px;
-    height: 3px;
+    height: 4px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 2px;
     overflow: hidden;
@@ -209,17 +223,6 @@ body {
 .unit-info p {
     margin: 0;
     font-size: 0.9rem;
-}
-
-.end-turn-btn {
-    padding: 0.7rem 2rem;
-    font-size: 1rem;
-    background: linear-gradient(145deg, #f59e0b, #d97706);
-}
-
-.end-turn-btn.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .overlay {

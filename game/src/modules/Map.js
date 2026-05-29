@@ -1,5 +1,6 @@
-export const ROWS = 11;
-export const COLS = 50;
+// 宽11格，长50格
+export const COLS = 11;  // 宽
+export const ROWS = 50;  // 长
 
 export const CellState = {
     EMPTY: 'empty',
@@ -7,7 +8,13 @@ export const CellState = {
     PLAYER: 'player',
     ENEMY: 'enemy',
     PLAYER_CASTLE: 'player_castle',
-    ENEMY_CASTLE: 'enemy_castle'
+    ENEMY_CASTLE: 'enemy_castle',
+    PLAYER_MINE: 'player_mine',
+    ENEMY_MINE: 'enemy_mine'
+};
+
+export const BuildTypes = {
+    MINE: 'mine'
 };
 
 export class GameMap {
@@ -15,16 +22,22 @@ export class GameMap {
         this.grid = [];
         this.playerCastle = null;
         this.enemyCastle = null;
+        this.playerMines = [];
+        this.enemyMines = [];
         this.initGrid();
     }
 
     initGrid() {
         this.grid = [];
+        this.playerMines = [];
+        this.enemyMines = [];
+        
         for (let y = 0; y < ROWS; y++) {
             const row = [];
             for (let x = 0; x < COLS; x++) {
                 let state = CellState.UNEXPLORED;
                 let unit = null;
+                let building = null;
                 
                 // 设置玩家主城位置（底部中间）
                 if (y === ROWS - 1 && x === Math.floor(COLS / 2)) {
@@ -37,7 +50,7 @@ export class GameMap {
                     this.enemyCastle = { x, y };
                 }
                 
-                row.push({ x, y, state, unit });
+                row.push({ x, y, state, unit, building });
             }
             this.grid.push(row);
         }
@@ -66,6 +79,22 @@ export class GameMap {
         }
     }
 
+    setBuilding(x, y, building) {
+        const cell = this.getCell(x, y);
+        if (cell) {
+            cell.building = building;
+            if (building) {
+                building.x = x;
+                building.y = y;
+                if (building.owner === 'player') {
+                    this.playerMines.push(building);
+                } else {
+                    this.enemyMines.push(building);
+                }
+            }
+        }
+    }
+
     moveUnit(fromX, fromY, toX, toY) {
         const fromCell = this.getCell(fromX, fromY);
         const toCell = this.getCell(toX, toY);
@@ -73,9 +102,14 @@ export class GameMap {
         if (fromCell && toCell && fromCell.unit && !toCell.unit) {
             const unit = fromCell.unit;
             toCell.unit = unit;
-            toCell.state = unit.owner === 'player' ? CellState.PLAYER : CellState.ENEMY;
+            // 不要改变建筑格子的状态
+            if (!toCell.building) {
+                toCell.state = unit.owner === 'player' ? CellState.PLAYER : CellState.ENEMY;
+            }
             fromCell.unit = null;
-            fromCell.state = CellState.EMPTY;
+            if (!fromCell.building) {
+                fromCell.state = CellState.EMPTY;
+            }
             unit.x = toX;
             unit.y = toY;
             return true;

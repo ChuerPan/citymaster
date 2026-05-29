@@ -19,10 +19,10 @@ class GameUI {
         this.playerHpText = document.getElementById('player-hp-text');
         this.enemyHpBar = document.getElementById('enemy-hp');
         this.enemyHpText = document.getElementById('enemy-hp-text');
-        this.turnNumber = document.getElementById('turn-number');
+        this.playerGoldText = document.getElementById('player-gold');
+        this.enemyGoldText = document.getElementById('enemy-gold');
         this.unitInfo = document.getElementById('unit-info');
         this.resultText = document.getElementById('result-text');
-        this.endTurnBtn = document.getElementById('end-turn-btn');
         this.startBtn = document.getElementById('start-btn');
         this.restartBtn = document.getElementById('restart-btn');
     }
@@ -30,7 +30,6 @@ class GameUI {
     setupEventListeners() {
         this.startBtn.addEventListener('click', () => this.startGame());
         this.restartBtn.addEventListener('click', () => this.startGame());
-        this.endTurnBtn.addEventListener('click', () => this.game.endPlayerTurn());
     }
 
     startGame() {
@@ -52,8 +51,8 @@ class GameUI {
 
     renderMap(map, selectedUnit) {
         this.mapGrid.innerHTML = '';
-        this.mapGrid.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
-        this.mapGrid.style.gridTemplateRows = `repeat(${ROWS}, 28px)`;
+        this.mapGrid.style.gridTemplateColumns = `repeat(${COLS}, 40px)`;
+        this.mapGrid.style.gridTemplateRows = `repeat(${ROWS}, 40px)`;
         
         for (let y = 0; y < ROWS; y++) {
             for (let x = 0; x < COLS; x++) {
@@ -80,6 +79,11 @@ class GameUI {
                     hpFill.style.width = `${cell.unit.getHpPercent()}%`;
                     hpBar.appendChild(hpFill);
                     cellEl.appendChild(hpBar);
+                } else if (cell.building) {
+                    const icon = document.createElement('div');
+                    icon.className = 'cell-icon';
+                    icon.textContent = cell.building.icon;
+                    cellEl.appendChild(icon);
                 } else if (cell.state === 'player_castle' || cell.state === 'enemy_castle') {
                     const icon = document.createElement('div');
                     icon.className = 'cell-icon';
@@ -99,49 +103,27 @@ class GameUI {
     }
 
     updateUI(state) {
-        // 更新血条
         this.playerHpBar.style.width = `${state.playerHp}%`;
         this.playerHpText.textContent = `${state.playerHp}%`;
         this.enemyHpBar.style.width = `${state.enemyHp}%`;
         this.enemyHpText.textContent = `${state.enemyHp}%`;
+        this.playerGoldText.textContent = state.playerGold;
+        this.enemyGoldText.textContent = state.enemyGold;
         
-        // 更新回合数
-        this.turnNumber.textContent = state.turn + 1;
-        
-        // 更新结束回合按钮
-        if (state.currentPlayer === 'player' && !state.gameOver) {
-            this.endTurnBtn.classList.remove('disabled');
-        } else {
-            this.endTurnBtn.classList.add('disabled');
-        }
-        
-        // 更新单位信息
         if (state.selectedUnit) {
             const unit = state.selectedUnit;
             this.unitInfo.innerHTML = `
                 <p><strong>${unit.icon} ${unit.name}</strong> - HP: ${unit.hp}/${unit.maxHp}</p>
                 <p>攻击力: ${unit.attack} | 防御: ${unit.defense}</p>
                 <p>移动范围: ${unit.moveRange} | 攻击范围: ${unit.attackRange}</p>
-                <p>攻击优先级: ${this.getPriorityText(unit.attackPriority)}</p>
             `;
         } else {
             this.unitInfo.innerHTML = '<p>点击格子探索或选择单位</p>';
         }
         
-        // 检查游戏结束
         if (state.gameOver) {
             this.showGameOver(state.winner);
         }
-    }
-
-    getPriorityText(priority) {
-        const texts = {
-            'nearest': '最近的敌人',
-            'farthest': '最远的敌人',
-            'weakest': '血量最低的敌人',
-            'strongest': '血量最高的敌人'
-        };
-        return texts[priority] || '最近的敌人';
     }
 
     showGameOver(winner) {

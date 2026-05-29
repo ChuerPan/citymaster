@@ -9,6 +9,7 @@ export const UNITS = {
         attackRange: 1,
         moveRange: 2,
         attackPriority: 'nearest',
+        cost: 10,
         description: '近战步兵，攻击力平衡'
     },
     archer: {
@@ -21,6 +22,7 @@ export const UNITS = {
         attackRange: 4,
         moveRange: 2,
         attackPriority: 'farthest',
+        cost: 15,
         description: '远程单位，优先攻击远处敌人'
     },
     cavalry: {
@@ -33,6 +35,7 @@ export const UNITS = {
         attackRange: 1,
         moveRange: 4,
         attackPriority: 'nearest',
+        cost: 20,
         description: '高机动性近战单位'
     },
     mage: {
@@ -45,6 +48,7 @@ export const UNITS = {
         attackRange: 3,
         moveRange: 2,
         attackPriority: 'weakest',
+        cost: 25,
         description: '魔法攻击，优先攻击血量低的'
     },
     tank: {
@@ -57,6 +61,7 @@ export const UNITS = {
         attackRange: 1,
         moveRange: 1,
         attackPriority: 'nearest',
+        cost: 18,
         description: '高防御单位，保护其他单位'
     },
     assassin: {
@@ -69,7 +74,19 @@ export const UNITS = {
         attackRange: 1,
         moveRange: 3,
         attackPriority: 'strongest',
+        cost: 22,
         description: '高爆发，优先攻击高血量'
+    }
+};
+
+export const BUILDINGS = {
+    mine: {
+        id: 'mine',
+        name: '矿场',
+        icon: '⛏️',
+        goldPerSecond: 5,
+        cost: 30,
+        description: '每秒产生5金币'
     }
 };
 
@@ -90,8 +107,7 @@ export class Unit {
         this.attackPriority = template.attackPriority;
         this.x = x;
         this.y = y;
-        this.hasMoved = false;
-        this.hasAttacked = false;
+        this.lastActionTime = 0;
     }
 
     takeDamage(damage) {
@@ -108,8 +124,34 @@ export class Unit {
         return Math.max(0, (this.hp / this.maxHp) * 100);
     }
 
-    resetTurn() {
-        this.hasMoved = false;
-        this.hasAttacked = false;
+    canAct(currentTime, cooldown = 500) {
+        return currentTime - this.lastActionTime >= cooldown;
+    }
+
+    markAction(currentTime) {
+        this.lastActionTime = currentTime;
+    }
+}
+
+export class Building {
+    constructor(buildType, owner, x, y) {
+        const template = BUILDINGS[buildType];
+        this.id = `${buildType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        this.type = buildType;
+        this.name = template.name;
+        this.icon = template.icon;
+        this.owner = owner;
+        this.x = x;
+        this.y = y;
+        this.goldPerSecond = template.goldPerSecond;
+        this.lastProduceTime = 0;
+    }
+
+    produceGold(currentTime) {
+        if (currentTime - this.lastProduceTime >= 1000) {
+            this.lastProduceTime = currentTime;
+            return this.goldPerSecond;
+        }
+        return 0;
     }
 }
