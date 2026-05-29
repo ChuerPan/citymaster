@@ -88,7 +88,6 @@ class GameUI {
                 const cell = state.map.getCell(x, y);
                 const cellEl = document.createElement('div');
                 
-                // 设置区域样式
                 if (state.map.isEnemyZone(y)) {
                     cellEl.className = 'cell enemy-zone';
                 } else if (state.map.isPlayerZone(y)) {
@@ -97,14 +96,12 @@ class GameUI {
                     cellEl.className = 'cell';
                 }
                 
-                // 城堡
                 if (cell.state === 'player_castle') {
                     cellEl.classList.add('player-castle', 'has-building');
                 } else if (cell.state === 'enemy_castle') {
                     cellEl.classList.add('enemy-castle', 'has-building');
                 }
                 
-                // 单位
                 if (cell.unit) {
                     cellEl.classList.add('has-unit');
                     if (cell.unit.owner === 'enemy') {
@@ -125,7 +122,6 @@ class GameUI {
                     cellEl.appendChild(hpBar);
                 }
                 
-                // 建筑
                 if (cell.building && !cell.unit) {
                     cellEl.classList.add('has-building');
                     
@@ -150,7 +146,6 @@ class GameUI {
     }
 
     updateUI(state) {
-        // 城堡血量
         if (state.playerCastle) {
             const hpPercent = (state.playerCastle.hp / state.playerCastle.maxHp) * 100;
             this.playerHpBar.style.width = `${hpPercent}%`;
@@ -169,17 +164,14 @@ class GameUI {
             this.enemyHpText.textContent = '0%';
         }
         
-        // 金币
         this.playerGoldText.textContent = state.playerGold;
         this.enemyGoldText.textContent = state.enemyGold;
         
-        // 种族名称
         if (state.playerRace) {
             const race = RACES[state.playerRace];
             this.playerRaceName.textContent = `${race.icon} ${race.name}主城`;
         }
         
-        // 游戏结束
         if (state.gameOver) {
             this.showGameOver(state.winner);
         }

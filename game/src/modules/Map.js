@@ -1,8 +1,8 @@
-// 地图配置：宽11格，长50格
-export const MAP_WIDTH = 11;
-export const MAP_HEIGHT = 50;
-export const PLAYER_ZONE_START = 25; // 玩家区域起始（行25-49）
-export const ENEMY_ZONE_END = 25;   // 敌方区域结束（行0-24）
+// 地图配置：宽15格，长30格
+export const MAP_WIDTH = 15;
+export const MAP_HEIGHT = 30;
+export const PLAYER_ZONE_START = 15; // 玩家区域起始（行15-29）
+export const ENEMY_ZONE_END = 15;   // 敌方区域结束（行0-14）
 
 export const CellState = {
     EMPTY: 'empty',
@@ -28,17 +28,14 @@ export class GameMap {
             for (let x = 0; x < MAP_WIDTH; x++) {
                 let state;
                 
-                // 确定区域
                 if (y < ENEMY_ZONE_END) {
                     state = CellState.ENEMY_ZONE;
                 } else if (y >= PLAYER_ZONE_START) {
                     state = CellState.PLAYER_ZONE;
                 } else {
-                    // 中立区域（可通行但不自动建造）
                     state = CellState.EMPTY;
                 }
                 
-                // 设置主城位置（中间列）
                 const middleX = Math.floor(MAP_WIDTH / 2);
                 if (y === PLAYER_ZONE_START && x === middleX) {
                     state = CellState.PLAYER_CASTLE;

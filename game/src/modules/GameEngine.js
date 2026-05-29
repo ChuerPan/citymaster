@@ -1,4 +1,4 @@
-import { GameMap, CellState, MAP_WIDTH, PLAYER_ZONE_START } from './Map.js';
+import { GameMap, CellState, MAP_WIDTH, PLAYER_ZONE_START, ENEMY_ZONE_END } from './Map.js';
 import { createUnit, createBuilding, createSkeleton } from './Units.js';
 import { BattleSystem } from './Battle.js';
 import { GameAI } from './AI.js';
@@ -34,13 +34,12 @@ export class GameEngine {
         this.gameOver = false;
         this.winner = null;
         
-        // 创建主城
         const middleX = Math.floor(MAP_WIDTH / 2);
         this.playerCastle = createBuilding('castle', 'player', playerRace, middleX, PLAYER_ZONE_START);
         this.map.setBuilding(middleX, PLAYER_ZONE_START, this.playerCastle);
         
-        this.enemyCastle = createBuilding('castle', 'enemy', enemyRace, middleX, 24);
-        this.map.setBuilding(middleX, 24, this.enemyCastle);
+        this.enemyCastle = createBuilding('castle', 'enemy', enemyRace, middleX, ENEMY_ZONE_END - 1);
+        this.map.setBuilding(middleX, ENEMY_ZONE_END - 1, this.enemyCastle);
         
         this.startGameLoop();
         this.notifyStateChange();
@@ -64,7 +63,7 @@ export class GameEngine {
 
         this.processBuildings(currentTime);
         this.processUnits(currentTime);
-        this.processAutoBuild(currentTime);
+        this.processAutoBuild();
         this.checkGameOver();
 
         this.notifyStateChange();
@@ -72,7 +71,6 @@ export class GameEngine {
     }
 
     processBuildings(currentTime) {
-        // 处理金币产出
         if (this.playerCastle && this.playerCastle.canProduceGold(currentTime)) {
             this.playerGold += this.playerCastle.goldAmount;
             this.playerCastle.markGoldProduction(currentTime);
@@ -83,7 +81,6 @@ export class GameEngine {
             this.enemyCastle.markGoldProduction(currentTime);
         }
 
-        // 处理建筑攻击
         this.processBuildingAttacks(this.playerCastle, this.map.getEnemyUnits(), currentTime);
         this.processBuildingAttacks(this.enemyCastle, this.map.getPlayerUnits(), currentTime);
     }
@@ -109,12 +106,10 @@ export class GameEngine {
         const playerCastlePos = { x: this.playerCastle.x, y: this.playerCastle.y };
         const enemyCastlePos = { x: this.enemyCastle.x, y: this.enemyCastle.y };
 
-        // 处理玩家单位
         playerUnits.forEach(unit => {
             this.processUnit(unit, currentTime, enemyUnits, enemyCastlePos);
         });
 
-        // 处理敌方单位
         enemyUnits.forEach(unit => {
             this.processAIUnit(unit, currentTime, playerUnits, playerCastlePos);
         });
@@ -124,12 +119,10 @@ export class GameEngine {
         if (unit.isBuilding) return;
         if (!unit.canAct(currentTime)) return;
 
-        // 处理召唤
         if (unit.canSummon) {
             this.processSummon(unit, currentTime);
         }
 
-        // 尝试攻击
         if (unit.attack > 0) {
             const target = this.battle.findTarget(unit, enemies);
             
@@ -153,7 +146,6 @@ export class GameEngine {
             }
         }
 
-        // 移动
         if (unit.moveSpeed > 0) {
             let moveTarget = targetCastle;
             if (enemies.length > 0) {
@@ -177,12 +169,10 @@ export class GameEngine {
         if (unit.isBuilding) return;
         if (!unit.canAct(currentTime)) return;
 
-        // 处理召唤
         if (unit.canSummon) {
             this.processSummon(unit, currentTime);
         }
 
-        // 尝试攻击
         if (unit.attack > 0) {
             const target = this.battle.findTarget(unit, enemies);
             
@@ -206,7 +196,6 @@ export class GameEngine {
             }
         }
 
-        // 移动
         if (unit.moveSpeed > 0) {
             let moveTarget = targetCastle;
             if (enemies.length > 0) {
@@ -250,8 +239,7 @@ export class GameEngine {
         }
     }
 
-    processAutoBuild(currentTime) {
-        // AI 自动建造
+    processAutoBuild() {
         if (this.ai.gold >= 20 && Math.random() < 0.02) {
             this.ai.autoBuild();
         }
@@ -278,7 +266,6 @@ export class GameEngine {
             }
         });
 
-        // 检查城堡死亡
         if (this.playerCastle && !this.playerCastle.isAlive()) {
             this.playerCastle = null;
         }
@@ -293,16 +280,12 @@ export class GameEngine {
         const cell = this.map.getCell(x, y);
         if (!cell) return;
 
-        // 检查是否是玩家区域
         if (!this.map.isPlayerZone(y)) return;
 
-        // 检查是否已有单位或建筑
         if (cell.unit || cell.building) return;
 
-        // 检查是否是城堡位置
         if (cell.state === CellState.PLAYER_CASTLE || cell.state === CellState.ENEMY_CASTLE) return;
 
-        // 建造单位
         if (this.playerGold >= 20) {
             const types = ['warrior', 'tank', 'archer', 'mage', 'summoner'];
             const unitType = types[Math.floor(Math.random() * types.length)];

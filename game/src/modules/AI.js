@@ -1,6 +1,6 @@
 import { createUnit, createBuilding, createSkeleton } from './Units.js';
 import { BattleSystem } from './Battle.js';
-import { MAP_WIDTH } from './Map.js';
+import { MAP_WIDTH, ENEMY_ZONE_END } from './Map.js';
 
 export class GameAI {
     constructor(gameMap, raceId) {
@@ -17,7 +17,7 @@ export class GameAI {
 
     findBuildTargets() {
         const targets = [];
-        for (let y = 0; y < 25; y++) {
+        for (let y = 0; y < ENEMY_ZONE_END; y++) {
             for (let x = 0; x < MAP_WIDTH; x++) {
                 const cell = this.map.getCell(x, y);
                 if (cell && !cell.unit && !cell.building) {
@@ -61,7 +61,6 @@ export class GameAI {
 
         const enemies = playerUnits;
         
-        // 尝试攻击
         if (unit.attack > 0 && enemies.length > 0) {
             const target = this.battle.findTarget(unit, enemies);
             
@@ -69,20 +68,17 @@ export class GameAI {
                 const dist = this.map.getDistance(unit.x, unit.y, target.x, target.y);
                 
                 if (dist <= unit.attackRange) {
-                    // 在攻击范围内，直接攻击
                     if (unit.aoeRange > 0) {
                         return { type: 'aoe_attack', unit, target, aoeRange: unit.aoeRange };
                     }
                     return { type: 'attack', unit, target };
                 } else {
-                    // 不在攻击范围内，移动
                     const moveTarget = this.battle.findMoveTarget(unit, target);
                     if (moveTarget) {
                         return { type: 'move', unit, target: moveTarget };
                     }
                 }
             } else {
-                // 无优先目标，攻击城堡
                 const dist = this.map.getDistance(unit.x, unit.y, enemyCastle.x, enemyCastle.y);
                 if (dist <= unit.attackRange) {
                     return { type: 'attack_castle', unit, target: enemyCastle };
@@ -95,7 +91,6 @@ export class GameAI {
             }
         }
         
-        // 移动向城堡
         if (unit.moveSpeed > 0) {
             const moveTarget = this.battle.findMoveTarget(unit, enemyCastle);
             if (moveTarget) {
