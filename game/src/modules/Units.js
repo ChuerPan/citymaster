@@ -1,209 +1,115 @@
 export const UNITS = {
-    swordsman: {
-        id: 'swordsman',
-        name: '剑士',
+    infantry: {
+        id: 'infantry',
+        name: '步兵',
         icon: '⚔️',
-        cost: 10,
         hp: 80,
-        attack: 15,
+        attack: 20,
         defense: 5,
-        attackType: 'melee',
         attackRange: 1,
-        description: '普通近战单位，攻防均衡'
+        moveRange: 2,
+        attackPriority: 'nearest',
+        description: '近战步兵，攻击力平衡'
     },
     archer: {
         id: 'archer',
         name: '弓箭手',
         icon: '🏹',
-        cost: 15,
         hp: 50,
-        attack: 20,
-        defense: 2,
-        attackType: 'ranged',
-        attackRange: 3,
-        description: '远程攻击单位'
-    },
-    knight: {
-        id: 'knight',
-        name: '骑士',
-        icon: '🛡️',
-        cost: 25,
-        hp: 120,
         attack: 25,
-        defense: 10,
-        attackType: 'melee',
+        defense: 2,
+        attackRange: 4,
+        moveRange: 2,
+        attackPriority: 'farthest',
+        description: '远程单位，优先攻击远处敌人'
+    },
+    cavalry: {
+        id: 'cavalry',
+        name: '骑兵',
+        icon: '🐴',
+        hp: 100,
+        attack: 25,
+        defense: 8,
         attackRange: 1,
-        description: '重装骑兵，高攻防'
+        moveRange: 4,
+        attackPriority: 'nearest',
+        description: '高机动性近战单位'
     },
     mage: {
         id: 'mage',
         name: '法师',
         icon: '🧙',
-        cost: 30,
         hp: 60,
         attack: 35,
         defense: 1,
-        attackType: 'magic',
-        attackRange: 2,
-        description: '魔法攻击，无视部分防御'
+        attackRange: 3,
+        moveRange: 2,
+        attackPriority: 'weakest',
+        description: '魔法攻击，优先攻击血量低的'
     },
-    grunt: {
-        id: 'grunt',
-        name: '兽人步兵',
-        icon: '🪓',
-        cost: 8,
-        hp: 90,
-        attack: 18,
-        defense: 3,
-        attackType: 'melee',
-        attackRange: 1,
-        description: '高血量近战单位'
-    },
-    troll: {
-        id: 'troll',
-        name: '巨魔',
-        icon: '👺',
-        cost: 20,
+    tank: {
+        id: 'tank',
+        name: '盾兵',
+        icon: '🛡️',
         hp: 150,
-        attack: 22,
-        defense: 6,
-        attackType: 'melee',
+        attack: 15,
+        defense: 15,
         attackRange: 1,
-        description: '巨型单位，血量极高'
+        moveRange: 1,
+        attackPriority: 'nearest',
+        description: '高防御单位，保护其他单位'
     },
-    orc_warrior: {
-        id: 'orc_warrior',
-        name: '兽人战士',
-        icon: '⚔️',
-        cost: 12,
-        hp: 70,
-        attack: 22,
-        defense: 4,
-        attackType: 'melee',
-        attackRange: 1,
-        description: '攻击力较高的近战单位'
-    },
-    shaman: {
-        id: 'shaman',
-        name: '萨满',
-        icon: '🔮',
-        cost: 28,
-        hp: 65,
-        attack: 30,
-        defense: 2,
-        attackType: 'magic',
-        attackRange: 2,
-        description: '萨满法师，群体攻击'
-    },
-    ranger: {
-        id: 'ranger',
-        name: '游侠',
-        icon: '🎯',
-        cost: 18,
-        hp: 55,
-        attack: 25,
-        defense: 3,
-        attackType: 'ranged',
-        attackRange: 4,
-        description: '远程单位，攻击距离远'
-    },
-    hunter: {
-        id: 'hunter',
-        name: '猎人',
-        icon: '🐺',
-        cost: 22,
-        hp: 70,
-        attack: 28,
-        defense: 4,
-        attackType: 'ranged',
-        attackRange: 3,
-        description: '召唤野兽协同作战'
-    },
-    druid: {
-        id: 'druid',
-        name: '德鲁伊',
-        icon: '🌿',
-        cost: 25,
-        hp: 80,
-        attack: 20,
-        defense: 5,
-        attackType: 'magic',
-        attackRange: 2,
-        description: '自然魔法，可以治疗'
-    },
-    phoenix: {
-        id: 'phoenix',
-        name: '凤凰',
-        icon: '🔥',
-        cost: 35,
-        hp: 100,
-        attack: 32,
-        defense: 4,
-        attackType: 'ranged',
-        attackRange: 3,
-        description: '火焰攻击，可复活一次'
-    },
-    shadow: {
-        id: 'shadow',
-        name: '暗影刺客',
-        icon: '🥷',
-        cost: 15,
-        hp: 45,
-        attack: 30,
-        defense: 1,
-        attackType: 'melee',
-        attackRange: 1,
-        description: '高爆发伤害'
-    },
-    lich: {
-        id: 'lich',
-        name: '巫妖王',
-        icon: '💀',
-        cost: 32,
-        hp: 75,
-        attack: 38,
-        defense: 3,
-        attackType: 'magic',
-        attackRange: 2,
-        description: '亡灵魔法，伤害极高'
-    },
-    demon: {
-        id: 'demon',
-        name: '恶魔',
-        icon: '😈',
-        cost: 28,
-        hp: 110,
-        attack: 26,
-        defense: 7,
-        attackType: 'melee',
-        attackRange: 1,
-        description: '强大的恶魔战士'
-    },
-    dragon: {
-        id: 'dragon',
-        name: '黑龙',
-        icon: '🐉',
-        cost: 45,
-        hp: 180,
+    assassin: {
+        id: 'assassin',
+        name: '刺客',
+        icon: '🗡️',
+        hp: 40,
         attack: 40,
-        defense: 12,
-        attackType: 'magic',
-        attackRange: 2,
-        description: '终极单位，攻防兼备'
+        defense: 2,
+        attackRange: 1,
+        moveRange: 3,
+        attackPriority: 'strongest',
+        description: '高爆发，优先攻击高血量'
     }
 };
 
-export function getUnitData(unitId) {
-    return UNITS[unitId] || UNITS.swordsman;
-}
+export class Unit {
+    constructor(unitType, owner, x, y) {
+        const template = UNITS[unitType];
+        this.id = `${unitType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        this.type = unitType;
+        this.name = template.name;
+        this.icon = template.icon;
+        this.owner = owner;
+        this.maxHp = template.hp;
+        this.hp = template.hp;
+        this.attack = template.attack;
+        this.defense = template.defense;
+        this.attackRange = template.attackRange;
+        this.moveRange = template.moveRange;
+        this.attackPriority = template.attackPriority;
+        this.x = x;
+        this.y = y;
+        this.hasMoved = false;
+        this.hasAttacked = false;
+    }
 
-export function createUnit(unitId, owner) {
-    const template = getUnitData(unitId);
-    return {
-        ...template,
-        instanceId: `${unitId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        owner,
-        currentHp: template.hp,
-        position: 0
-    };
+    takeDamage(damage) {
+        const actualDamage = Math.max(1, damage - this.defense);
+        this.hp -= actualDamage;
+        return actualDamage;
+    }
+
+    isAlive() {
+        return this.hp > 0;
+    }
+
+    getHpPercent() {
+        return Math.max(0, (this.hp / this.maxHp) * 100);
+    }
+
+    resetTurn() {
+        this.hasMoved = false;
+        this.hasAttacked = false;
+    }
 }

@@ -1,164 +1,151 @@
 import { GameEngine } from './modules/GameEngine.js';
-import { getRaceData } from './modules/Races.js';
-import { UNITS } from './modules/Units.js';
+import { ROWS, COLS } from './modules/Map.js';
 
 class GameUI {
     constructor() {
         this.game = new GameEngine();
         this.game.onStateChange = this.handleStateChange.bind(this);
         
-        this.initUI();
+        this.initElements();
+        this.setupEventListeners();
     }
-    
-    initUI() {
-        this.raceSelection = document.getElementById('race-selection');
+
+    initElements() {
+        this.startScreen = document.getElementById('start-screen');
         this.gameScreen = document.getElementById('game-screen');
+        this.gameOverOverlay = document.getElementById('game-over');
+        this.mapGrid = document.getElementById('map-grid');
         this.playerHpBar = document.getElementById('player-hp');
         this.playerHpText = document.getElementById('player-hp-text');
         this.enemyHpBar = document.getElementById('enemy-hp');
         this.enemyHpText = document.getElementById('enemy-hp-text');
-        this.goldDisplay = document.getElementById('gold');
-        this.unitCardsContainer = document.getElementById('unit-cards');
-        this.playerUnitsContainer = document.getElementById('player-units');
-        this.enemyUnitsContainer = document.getElementById('enemy-units');
-        this.gameOverOverlay = document.getElementById('game-over');
+        this.turnNumber = document.getElementById('turn-number');
+        this.unitInfo = document.getElementById('unit-info');
         this.resultText = document.getElementById('result-text');
         this.endTurnBtn = document.getElementById('end-turn-btn');
-        
-        this.setupEventListeners();
+        this.startBtn = document.getElementById('start-btn');
+        this.restartBtn = document.getElementById('restart-btn');
     }
-    
+
     setupEventListeners() {
-        document.querySelectorAll('.race-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const raceId = card.dataset.race;
-                this.selectRace(raceId);
-            });
-        });
-        
-        document.getElementById('restart-btn').addEventListener('click', () => {
-            this.showRaceSelection();
-        });
-        
-        this.unitCardsContainer.addEventListener('click', (e) => {
-            const card = e.target.closest('.unit-card');
-            if (card && !card.classList.contains('disabled')) {
-                const unitId = card.dataset.unitId;
-                this.game.spawnUnit(unitId);
-            }
-        });
-        
-        this.endTurnBtn.addEventListener('click', () => {
-            if (!this.endTurnBtn.classList.contains('disabled')) {
-                this.game.endPlayerTurn();
-            }
-        });
+        this.startBtn.addEventListener('click', () => this.startGame());
+        this.restartBtn.addEventListener('click', () => this.startGame());
+        this.endTurnBtn.addEventListener('click', () => this.game.endPlayerTurn());
     }
-    
-    selectRace(raceId) {
-        this.game.initGame(raceId);
-        this.showGameScreen();
-        this.renderUnitCards(raceId);
+
+    startGame() {
+        this.game.initGame();
+        this.showScreen('game');
     }
-    
-    showRaceSelection() {
-        this.raceSelection.classList.add('active');
+
+    showScreen(screen) {
+        this.startScreen.classList.remove('active');
         this.gameScreen.classList.remove('active');
         this.gameOverOverlay.classList.remove('active');
-    }
-    
-    showGameScreen() {
-        this.raceSelection.classList.remove('active');
-        this.gameScreen.classList.add('active');
-        this.gameOverOverlay.classList.remove('active');
-    }
-    
-    renderUnitCards(raceId) {
-        const raceData = getRaceData(raceId);
-        this.unitCardsContainer.innerHTML = '';
         
-        raceData.units.forEach(unitId => {
-            const unitData = UNITS[unitId];
-            const card = document.createElement('div');
-            card.className = 'unit-card';
-            card.dataset.unitId = unitId;
-            
-            card.innerHTML = `
-                <div class="unit-icon">${unitData.icon}</div>
-                <div class="unit-name">${unitData.name}</div>
-                <div class="cost">💰 ${unitData.cost}</div>
-            `;
-            
-            this.unitCardsContainer.appendChild(card);
-        });
-        
-        this.updateUnitCards();
+        if (screen === 'start') {
+            this.startScreen.classList.add('active');
+        } else if (screen === 'game') {
+            this.gameScreen.classList.add('active');
+        }
     }
-    
-    updateUnitCards() {
-        document.querySelectorAll('.unit-card').forEach(card => {
-            const unitId = card.dataset.unitId;
-            const unitData = UNITS[unitId];
-            
-            if (this.game.playerGold >= unitData.cost && this.game.isPlayerTurn && !this.game.gameOver) {
-                card.classList.remove('disabled');
-            } else {
-                card.classList.add('disabled');
+
+    renderMap(map, selectedUnit) {
+        this.mapGrid.innerHTML = '';
+        this.mapGrid.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
+        this.mapGrid.style.gridTemplateRows = `repeat(${ROWS}, 28px)`;
+        
+        for (let y = 0; y < ROWS; y++) {
+            for (let x = 0; x < COLS; x++) {
+                const cell = map.getCell(x, y);
+                const cellEl = document.createElement('div');
+                cellEl.className = `cell ${cell.state}`;
+                cellEl.dataset.x = x;
+                cellEl.dataset.y = y;
+                
+                if (selectedUnit && selectedUnit.x === x && selectedUnit.y === y) {
+                    cellEl.classList.add('selected');
+                }
+                
+                if (cell.unit) {
+                    const icon = document.createElement('div');
+                    icon.className = 'cell-icon';
+                    icon.textContent = cell.unit.icon;
+                    cellEl.appendChild(icon);
+                    
+                    const hpBar = document.createElement('div');
+                    hpBar.className = 'unit-hp';
+                    const hpFill = document.createElement('div');
+                    hpFill.className = 'unit-hp-fill';
+                    hpFill.style.width = `${cell.unit.getHpPercent()}%`;
+                    hpBar.appendChild(hpFill);
+                    cellEl.appendChild(hpBar);
+                } else if (cell.state === 'player_castle' || cell.state === 'enemy_castle') {
+                    const icon = document.createElement('div');
+                    icon.className = 'cell-icon';
+                    icon.textContent = '🏰';
+                    cellEl.appendChild(icon);
+                } else if (cell.state === 'unexplored') {
+                    const icon = document.createElement('div');
+                    icon.className = 'cell-icon';
+                    icon.textContent = '?';
+                    cellEl.appendChild(icon);
+                }
+                
+                cellEl.addEventListener('click', () => this.game.clickCell(x, y));
+                this.mapGrid.appendChild(cellEl);
             }
-        });
+        }
     }
-    
-    renderUnits(units, container, isEnemy) {
-        container.innerHTML = '';
-        
-        units.forEach(unit => {
-            const unitEl = document.createElement('div');
-            unitEl.className = `unit ${isEnemy ? 'enemy' : ''}`;
-            unitEl.dataset.instanceId = unit.instanceId;
-            
-            const hpPercent = (unit.currentHp / unit.hp) * 100;
-            
-            unitEl.innerHTML = `
-                <div class="unit-icon">${unit.icon}</div>
-                <div class="unit-name">${unit.name}</div>
-                <div class="unit-hp-bar">
-                    <div class="unit-hp-fill" style="width: ${hpPercent}%"></div>
-                </div>
-            `;
-            
-            container.appendChild(unitEl);
-        });
-    }
-    
-    handleStateChange(state) {
+
+    updateUI(state) {
+        // 更新血条
         this.playerHpBar.style.width = `${state.playerHp}%`;
         this.playerHpText.textContent = `${state.playerHp}%`;
         this.enemyHpBar.style.width = `${state.enemyHp}%`;
         this.enemyHpText.textContent = `${state.enemyHp}%`;
-        this.goldDisplay.textContent = state.playerGold;
         
-        this.renderUnits(state.playerUnits, this.playerUnitsContainer, false);
-        this.renderUnits(state.enemyUnits, this.enemyUnitsContainer, true);
+        // 更新回合数
+        this.turnNumber.textContent = state.turn + 1;
         
-        this.updateUnitCards();
-        this.updateEndTurnBtn(state);
-        
-        if (state.gameOver) {
-            this.showGameOver(state.winner);
-        }
-    }
-    
-    updateEndTurnBtn(state) {
-        if (state.isPlayerTurn && !state.gameOver) {
+        // 更新结束回合按钮
+        if (state.currentPlayer === 'player' && !state.gameOver) {
             this.endTurnBtn.classList.remove('disabled');
         } else {
             this.endTurnBtn.classList.add('disabled');
         }
+        
+        // 更新单位信息
+        if (state.selectedUnit) {
+            const unit = state.selectedUnit;
+            this.unitInfo.innerHTML = `
+                <p><strong>${unit.icon} ${unit.name}</strong> - HP: ${unit.hp}/${unit.maxHp}</p>
+                <p>攻击力: ${unit.attack} | 防御: ${unit.defense}</p>
+                <p>移动范围: ${unit.moveRange} | 攻击范围: ${unit.attackRange}</p>
+                <p>攻击优先级: ${this.getPriorityText(unit.attackPriority)}</p>
+            `;
+        } else {
+            this.unitInfo.innerHTML = '<p>点击格子探索或选择单位</p>';
+        }
+        
+        // 检查游戏结束
+        if (state.gameOver) {
+            this.showGameOver(state.winner);
+        }
     }
-    
+
+    getPriorityText(priority) {
+        const texts = {
+            'nearest': '最近的敌人',
+            'farthest': '最远的敌人',
+            'weakest': '血量最低的敌人',
+            'strongest': '血量最高的敌人'
+        };
+        return texts[priority] || '最近的敌人';
+    }
+
     showGameOver(winner) {
         this.gameOverOverlay.classList.add('active');
-        
         if (winner === 'player') {
             this.resultText.textContent = '🎉 胜利！';
             this.resultText.className = 'win';
@@ -166,6 +153,11 @@ class GameUI {
             this.resultText.textContent = '💀 失败...';
             this.resultText.className = 'lose';
         }
+    }
+
+    handleStateChange(state) {
+        this.renderMap(state.map, state.selectedUnit);
+        this.updateUI(state);
     }
 }
 

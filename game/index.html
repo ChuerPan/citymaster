@@ -8,44 +8,26 @@
 </head>
 <body>
     <div id="game-container">
-        <div id="race-selection" class="screen active">
-            <h1>选择种族</h1>
-            <div class="race-grid">
-                <div class="race-card" data-race="human">
-                    <div class="race-icon">👤</div>
-                    <h3>人族</h3>
-                    <p>均衡发展，攻守兼备</p>
-                </div>
-                <div class="race-card" data-race="orc">
-                    <div class="race-icon">👹</div>
-                    <h3>兽族</h3>
-                    <p>勇猛善战，攻击力强</p>
-                </div>
-                <div class="race-card" data-race="elf">
-                    <div class="race-icon">🧝</div>
-                    <h3>精灵</h3>
-                    <p>敏捷灵活，远程攻击</p>
-                </div>
-                <div class="race-card" data-race="night">
-                    <div class="race-icon">🌙</div>
-                    <h3>暗夜</h3>
-                    <p>神秘强大，魔法攻击</p>
-                </div>
-            </div>
+        <div id="start-screen" class="screen active">
+            <h1>占城大师</h1>
+            <p>点击开始游戏</p>
+            <button id="start-btn">开始游戏</button>
         </div>
         
         <div id="game-screen" class="screen">
             <div class="game-header">
                 <div class="player-info">
-                    <span class="label">玩家主城:</span>
+                    <span class="label">🏰 我方主城</span>
                     <div class="health-bar">
                         <div id="player-hp" class="hp-fill"></div>
                     </div>
                     <span id="player-hp-text">100%</span>
                 </div>
-                <div class="vs">VS</div>
+                <div class="turn-info">
+                    <span>回合 <span id="turn-number">1</span></span>
+                </div>
                 <div class="enemy-info">
-                    <span class="label">敌方主城:</span>
+                    <span>敌方主城 🏰</span>
                     <div class="health-bar enemy">
                         <div id="enemy-hp" class="hp-fill"></div>
                     </div>
@@ -53,26 +35,22 @@
                 </div>
             </div>
             
-            <div class="game-area">
-                <div class="battlefield">
-                    <div id="player-units" class="units-area player-side"></div>
-                    <div id="enemy-units" class="units-area enemy-side"></div>
-                </div>
-                
-                <div class="action-panel">
-                    <div class="unit-cards" id="unit-cards"></div>
-                    <div class="action-info">
-                        <div class="gold-display">💰 <span id="gold">100</span></div>
-                        <button id="end-turn-btn" class="end-turn-btn">结束回合</button>
-                    </div>
-                </div>
+            <div class="map-container" id="map-container">
+                <div id="map-grid"></div>
             </div>
             
-            <div id="game-over" class="overlay">
-                <div class="result-content">
-                    <h2 id="result-text"></h2>
-                    <button id="restart-btn">重新开始</button>
+            <div class="control-panel">
+                <div id="unit-info" class="unit-info">
+                    <p>点击格子探索或选择单位</p>
                 </div>
+                <button id="end-turn-btn" class="end-turn-btn">结束回合</button>
+            </div>
+        </div>
+        
+        <div id="game-over" class="overlay">
+            <div class="result-content">
+                <h2 id="result-text"></h2>
+                <button id="restart-btn">重新开始</button>
             </div>
         </div>
     </div>
