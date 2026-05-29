@@ -35,59 +35,83 @@ body {
 #start-screen h1 {
     color: #fff;
     font-size: 4rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
 }
 
 #start-screen p {
     color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     font-size: 1.2rem;
 }
 
-#start-screen button, #restart-btn {
-    padding: 1rem 3rem;
-    font-size: 1.2rem;
-    background: linear-gradient(145deg, #60a5fa, #3b82f6);
-    border: none;
-    border-radius: 0.5rem;
-    color: #fff;
-    font-weight: bold;
+.race-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 600px;
+}
+
+.race-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    padding: 2rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
-#start-screen button:hover, #restart-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
+.race-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(100, 200, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(100, 200, 255, 0.3);
+}
+
+.race-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.race-name {
+    color: #fff;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.race-desc {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.85rem;
 }
 
 .game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1.5rem;
     background: rgba(0, 0, 0, 0.5);
     border-bottom: 2px solid rgba(100, 200, 255, 0.3);
 }
 
-.player-info, .enemy-info, .vs {
+.player-info, .enemy-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     color: #fff;
+    font-size: 0.9rem;
 }
 
 .vs {
-    font-size: 1.5rem;
+    color: #fff;
+    font-size: 1.3rem;
     font-weight: bold;
 }
 
 .health-bar {
-    width: 120px;
-    height: 20px;
+    width: 100px;
+    height: 16px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -104,16 +128,14 @@ body {
 .gold-label {
     color: #fbbf24;
     font-weight: bold;
-    margin-left: 1rem;
 }
 
 .map-container {
     flex: 1;
     overflow: auto;
-    padding: 1rem;
+    padding: 0.5rem;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
 }
 
 #map-grid {
@@ -124,72 +146,57 @@ body {
 }
 
 .cell {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     position: relative;
+    font-size: 1rem;
 }
 
-.cell.unexplored {
-    background: #4a5568;
+.cell.enemy-zone {
+    background: rgba(239, 68, 68, 0.15);
 }
 
-.cell.unexplored:hover {
-    background: #718096;
+.cell.player-zone {
+    background: rgba(59, 130, 246, 0.15);
 }
 
-.cell.empty {
-    background: #2d3748;
+.cell.player-zone:hover:not(.has-unit):not(.has-building) {
+    background: rgba(59, 130, 246, 0.4);
 }
 
-.cell.player {
-    background: rgba(59, 130, 246, 0.5);
+.cell.has-unit {
+    cursor: default;
 }
 
-.cell.enemy {
-    background: rgba(239, 68, 68, 0.5);
+.cell.has-building {
+    cursor: default;
 }
 
-.cell.player_castle {
+.cell.player-castle {
     background: linear-gradient(145deg, #3b82f6, #1d4ed8);
 }
 
-.cell.enemy_castle {
+.cell.enemy-castle {
     background: linear-gradient(145deg, #ef4444, #b91c1c);
 }
 
-.cell.player_mine {
-    background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-}
-
-.cell.enemy_mine {
-    background: linear-gradient(145deg, #ec4899, #db2777);
-}
-
-.cell.selected {
-    box-shadow: inset 0 0 0 3px #fbbf24;
-}
-
-.cell:hover {
-    filter: brightness(1.2);
-}
-
 .cell-icon {
-    font-size: 1.5rem;
     position: relative;
     z-index: 1;
+    font-size: 1.1rem;
 }
 
 .unit-hp {
     position: absolute;
     bottom: 1px;
-    left: 1px;
-    right: 1px;
-    height: 4px;
+    left: 2px;
+    right: 2px;
+    height: 3px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 2px;
     overflow: hidden;
@@ -201,28 +208,23 @@ body {
     transition: width 0.3s ease;
 }
 
-.enemy .unit-hp-fill {
+.enemy-unit .unit-hp-fill {
     background: #f87171;
 }
 
 .control-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8rem 2rem;
+    padding: 0.6rem 1.5rem;
     background: rgba(0, 0, 0, 0.5);
     border-top: 2px solid rgba(100, 200, 255, 0.3);
 }
 
 .unit-info {
-    flex: 1;
     color: #fff;
-    min-height: 40px;
 }
 
 .unit-info p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .overlay {
@@ -252,7 +254,7 @@ body {
 
 .result-content h2 {
     color: #fff;
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-bottom: 2rem;
 }
 
@@ -264,4 +266,21 @@ body {
 .result-content h2.lose {
     color: #f87171;
     text-shadow: 0 0 20px rgba(248, 113, 113, 0.5);
+}
+
+#restart-btn {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    background: linear-gradient(145deg, #60a5fa, #3b82f6);
+    border: none;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#restart-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
 }

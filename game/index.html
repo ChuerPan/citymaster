@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>占城大师 - PVE版</title>
+    <title>占城大师</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="game-container">
+        <!-- 开始界面 -->
         <div id="start-screen" class="screen active">
             <h1>占城大师</h1>
-            <p>点击开始游戏</p>
-            <button id="start-btn">开始游戏</button>
+            <p>选择你的种族</p>
+            <div class="race-grid" id="race-selection"></div>
         </div>
         
+        <!-- 游戏界面 -->
         <div id="game-screen" class="screen">
             <div class="game-header">
                 <div class="player-info">
-                    <span class="label">🏰 我方主城</span>
+                    <span class="label" id="player-race-name">🏰 我方主城</span>
                     <div class="health-bar">
                         <div id="player-hp" class="hp-fill"></div>
                     </div>
                     <span id="player-hp-text">100%</span>
-                    <span class="gold-label">💰 <span id="player-gold">50</span></span>
+                    <span class="gold-label">💰 <span id="player-gold">100</span></span>
                 </div>
                 <div class="vs">VS</div>
                 <div class="enemy-info">
-                    <span class="gold-label">💰 <span id="enemy-gold">50</span></span>
+                    <span class="gold-label">💰 <span id="enemy-gold">100</span></span>
                     <span>敌方主城 🏰</span>
                     <div class="health-bar enemy">
                         <div id="enemy-hp" class="hp-fill"></div>
@@ -41,11 +43,12 @@
             
             <div class="control-panel">
                 <div id="unit-info" class="unit-info">
-                    <p>点击格子探索或选择单位</p>
+                    <p>💡 点击下方格子花费20金币招募士兵</p>
                 </div>
             </div>
         </div>
         
+        <!-- 游戏结束界面 -->
         <div id="game-over" class="overlay">
             <div class="result-content">
                 <h2 id="result-text"></h2>

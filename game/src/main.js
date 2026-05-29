@@ -1,5 +1,6 @@
 import { GameEngine } from './modules/GameEngine.js';
-import { ROWS, COLS } from './modules/Map.js';
+import { RACES, getAllRaceIds } from './modules/Races.js';
+import { MAP_WIDTH, MAP_HEIGHT } from './modules/Map.js';
 
 class GameUI {
     constructor() {
@@ -8,6 +9,7 @@ class GameUI {
         
         this.initElements();
         this.setupEventListeners();
+        this.renderRaceSelection();
     }
 
     initElements() {
@@ -21,19 +23,46 @@ class GameUI {
         this.enemyHpText = document.getElementById('enemy-hp-text');
         this.playerGoldText = document.getElementById('player-gold');
         this.enemyGoldText = document.getElementById('enemy-gold');
+        this.playerRaceName = document.getElementById('player-race-name');
         this.unitInfo = document.getElementById('unit-info');
         this.resultText = document.getElementById('result-text');
-        this.startBtn = document.getElementById('start-btn');
         this.restartBtn = document.getElementById('restart-btn');
     }
 
     setupEventListeners() {
-        this.startBtn.addEventListener('click', () => this.startGame());
-        this.restartBtn.addEventListener('click', () => this.startGame());
+        this.restartBtn.addEventListener('click', () => {
+            this.showScreen('start');
+        });
     }
 
-    startGame() {
-        this.game.initGame();
+    renderRaceSelection() {
+        const raceSelection = document.getElementById('race-selection');
+        raceSelection.innerHTML = '';
+        
+        const raceIds = getAllRaceIds();
+        raceIds.forEach(raceId => {
+            const race = RACES[raceId];
+            const card = document.createElement('div');
+            card.className = 'race-card';
+            card.dataset.raceId = raceId;
+            
+            card.innerHTML = `
+                <div class="race-icon">${race.icon}</div>
+                <div class="race-name">${race.name}</div>
+                <div class="race-desc">${race.description}</div>
+            `;
+            
+            card.addEventListener('click', () => this.selectRace(raceId));
+            raceSelection.appendChild(card);
+        });
+    }
+
+    selectRace(playerRace) {
+        const raceIds = getAllRaceIds();
+        const enemyRaces = raceIds.filter(id => id !== playerRace);
+        const enemyRace = enemyRaces[Math.floor(Math.random() * enemyRaces.length)];
+        
+        this.game.initGame(playerRace, enemyRace);
         this.showScreen('game');
     }
 
@@ -49,24 +78,39 @@ class GameUI {
         }
     }
 
-    renderMap(map, selectedUnit) {
+    renderMap(state) {
         this.mapGrid.innerHTML = '';
-        this.mapGrid.style.gridTemplateColumns = `repeat(${COLS}, 40px)`;
-        this.mapGrid.style.gridTemplateRows = `repeat(${ROWS}, 40px)`;
+        this.mapGrid.style.gridTemplateColumns = `repeat(${MAP_WIDTH}, 28px)`;
+        this.mapGrid.style.gridTemplateRows = `repeat(${MAP_HEIGHT}, 28px)`;
         
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
-                const cell = map.getCell(x, y);
+        for (let y = 0; y < MAP_HEIGHT; y++) {
+            for (let x = 0; x < MAP_WIDTH; x++) {
+                const cell = state.map.getCell(x, y);
                 const cellEl = document.createElement('div');
-                cellEl.className = `cell ${cell.state}`;
-                cellEl.dataset.x = x;
-                cellEl.dataset.y = y;
                 
-                if (selectedUnit && selectedUnit.x === x && selectedUnit.y === y) {
-                    cellEl.classList.add('selected');
+                // 设置区域样式
+                if (state.map.isEnemyZone(y)) {
+                    cellEl.className = 'cell enemy-zone';
+                } else if (state.map.isPlayerZone(y)) {
+                    cellEl.className = 'cell player-zone';
+                } else {
+                    cellEl.className = 'cell';
                 }
                 
+                // 城堡
+                if (cell.state === 'player_castle') {
+                    cellEl.classList.add('player-castle', 'has-building');
+                } else if (cell.state === 'enemy_castle') {
+                    cellEl.classList.add('enemy-castle', 'has-building');
+                }
+                
+                // 单位
                 if (cell.unit) {
+                    cellEl.classList.add('has-unit');
+                    if (cell.unit.owner === 'enemy') {
+                        cellEl.classList.add('enemy-unit');
+                    }
+                    
                     const icon = document.createElement('div');
                     icon.className = 'cell-icon';
                     icon.textContent = cell.unit.icon;
@@ -79,21 +123,24 @@ class GameUI {
                     hpFill.style.width = `${cell.unit.getHpPercent()}%`;
                     hpBar.appendChild(hpFill);
                     cellEl.appendChild(hpBar);
-                } else if (cell.building) {
+                }
+                
+                // 建筑
+                if (cell.building && !cell.unit) {
+                    cellEl.classList.add('has-building');
+                    
                     const icon = document.createElement('div');
                     icon.className = 'cell-icon';
                     icon.textContent = cell.building.icon;
                     cellEl.appendChild(icon);
-                } else if (cell.state === 'player_castle' || cell.state === 'enemy_castle') {
-                    const icon = document.createElement('div');
-                    icon.className = 'cell-icon';
-                    icon.textContent = '🏰';
-                    cellEl.appendChild(icon);
-                } else if (cell.state === 'unexplored') {
-                    const icon = document.createElement('div');
-                    icon.className = 'cell-icon';
-                    icon.textContent = '?';
-                    cellEl.appendChild(icon);
+                    
+                    const hpBar = document.createElement('div');
+                    hpBar.className = 'unit-hp';
+                    const hpFill = document.createElement('div');
+                    hpFill.className = 'unit-hp-fill';
+                    hpFill.style.width = `${cell.building.getHpPercent()}%`;
+                    hpBar.appendChild(hpFill);
+                    cellEl.appendChild(hpBar);
                 }
                 
                 cellEl.addEventListener('click', () => this.game.clickCell(x, y));
@@ -103,24 +150,36 @@ class GameUI {
     }
 
     updateUI(state) {
-        this.playerHpBar.style.width = `${state.playerHp}%`;
-        this.playerHpText.textContent = `${state.playerHp}%`;
-        this.enemyHpBar.style.width = `${state.enemyHp}%`;
-        this.enemyHpText.textContent = `${state.enemyHp}%`;
+        // 城堡血量
+        if (state.playerCastle) {
+            const hpPercent = (state.playerCastle.hp / state.playerCastle.maxHp) * 100;
+            this.playerHpBar.style.width = `${hpPercent}%`;
+            this.playerHpText.textContent = `${Math.max(0, Math.floor(hpPercent))}%`;
+        } else {
+            this.playerHpBar.style.width = '0%';
+            this.playerHpText.textContent = '0%';
+        }
+        
+        if (state.enemyCastle) {
+            const hpPercent = (state.enemyCastle.hp / state.enemyCastle.maxHp) * 100;
+            this.enemyHpBar.style.width = `${hpPercent}%`;
+            this.enemyHpText.textContent = `${Math.max(0, Math.floor(hpPercent))}%`;
+        } else {
+            this.enemyHpBar.style.width = '0%';
+            this.enemyHpText.textContent = '0%';
+        }
+        
+        // 金币
         this.playerGoldText.textContent = state.playerGold;
         this.enemyGoldText.textContent = state.enemyGold;
         
-        if (state.selectedUnit) {
-            const unit = state.selectedUnit;
-            this.unitInfo.innerHTML = `
-                <p><strong>${unit.icon} ${unit.name}</strong> - HP: ${unit.hp}/${unit.maxHp}</p>
-                <p>攻击力: ${unit.attack} | 防御: ${unit.defense}</p>
-                <p>移动范围: ${unit.moveRange} | 攻击范围: ${unit.attackRange}</p>
-            `;
-        } else {
-            this.unitInfo.innerHTML = '<p>点击格子探索或选择单位</p>';
+        // 种族名称
+        if (state.playerRace) {
+            const race = RACES[state.playerRace];
+            this.playerRaceName.textContent = `${race.icon} ${race.name}主城`;
         }
         
+        // 游戏结束
         if (state.gameOver) {
             this.showGameOver(state.winner);
         }
@@ -138,7 +197,7 @@ class GameUI {
     }
 
     handleStateChange(state) {
-        this.renderMap(state.map, state.selectedUnit);
+        this.renderMap(state);
         this.updateUI(state);
     }
 }

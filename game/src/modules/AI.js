@@ -1,147 +1,134 @@
-import { UNITS, Unit, Building, BUILDINGS } from './Units.js';
-import { COLS, ROWS, CellState } from './Map.js';
+import { createUnit, createBuilding, createSkeleton } from './Units.js';
+import { BattleSystem } from './Battle.js';
+import { MAP_WIDTH } from './Map.js';
 
 export class GameAI {
-    constructor(gameMap) {
-        this.gameMap = gameMap;
+    constructor(gameMap, raceId) {
+        this.map = gameMap;
+        this.raceId = raceId;
+        this.battle = new BattleSystem(gameMap);
+        this.gold = 100;
+        this.buildCooldown = 0;
     }
 
-    findBuildTarget() {
+    update(deltaTime) {
+        this.gold += deltaTime * 0.1;
+    }
+
+    findBuildTargets() {
         const targets = [];
-        for (let y = 1; y < Math.floor(ROWS / 2); y++) {
-            for (let x = 0; x < COLS; x++) {
-                const cell = this.gameMap.getCell(x, y);
-                if (cell && cell.state === CellState.UNEXPLORED) {
+        for (let y = 0; y < 25; y++) {
+            for (let x = 0; x < MAP_WIDTH; x++) {
+                const cell = this.map.getCell(x, y);
+                if (cell && !cell.unit && !cell.building) {
                     targets.push(cell);
                 }
             }
         }
-        
-        if (targets.length === 0) return null;
-        return targets[Math.floor(Math.random() * targets.length)];
+        return targets;
     }
 
-    buildUnit(cell) {
-        if (!cell || cell.state !== CellState.UNEXPLORED) return null;
+    getRandomUnitType() {
+        const types = ['warrior', 'tank', 'archer', 'mage', 'summoner'];
+        return types[Math.floor(Math.random() * types.length)];
+    }
+
+    spawnUnit(cell) {
+        if (!cell || this.gold < 20) return null;
         
-        const unitTypes = Object.keys(UNITS);
-        const randomType = unitTypes[Math.floor(Math.random() * unitTypes.length)];
-        const unit = new Unit(randomType, 'enemy', cell.x, cell.y);
+        const unitType = this.getRandomUnitType();
+        const unit = createUnit(unitType, 'enemy', this.raceId, cell.x, cell.y);
         
-        this.gameMap.setUnit(cell.x, cell.y, unit);
-        cell.state = CellState.ENEMY;
+        this.map.setUnit(cell.x, cell.y, unit);
+        this.gold -= 20;
         
         return unit;
     }
 
-    getMoveTargets(unit) {
-        const targets = [];
-        const startX = Math.max(0, unit.x - unit.moveRange);
-        const endX = Math.min(COLS - 1, unit.x + unit.moveRange);
-        const startY = Math.max(0, unit.y - unit.moveRange);
-        const endY = Math.min(ROWS - 1, unit.y + unit.moveRange);
+    autoBuild() {
+        if (this.gold < 20) return null;
         
-        for (let x = startX; x <= endX; x++) {
-            for (let y = startY; y <= endY; y++) {
-                const dist = this.gameMap.getManhattanDistance(unit.x, unit.y, x, y);
-                if (dist <= unit.moveRange && dist > 0) {
-                    const cell = this.gameMap.getCell(x, y);
-                    if (cell && !cell.unit && cell.state !== CellState.PLAYER_CASTLE && cell.state !== CellState.ENEMY_CASTLE) {
-                        targets.push(cell);
-                    }
-                }
-            }
-        }
-        
-        return targets;
-    }
-
-    getAttackTargets(unit) {
-        const targets = [];
-        const startX = Math.max(0, unit.x - unit.attackRange);
-        const endX = Math.min(COLS - 1, unit.x + unit.attackRange);
-        const startY = Math.max(0, unit.y - unit.attackRange);
-        const endY = Math.min(ROWS - 1, unit.y + unit.attackRange);
-        
-        for (let x = startX; x <= endX; x++) {
-            for (let y = startY; y <= endY; y++) {
-                const dist = this.gameMap.getDistance(unit.x, unit.y, x, y);
-                if (dist <= unit.attackRange && dist > 0) {
-                    const cell = this.gameMap.getCell(x, y);
-                    if (cell) {
-                        if (cell.unit && cell.unit.owner !== unit.owner) {
-                            targets.push({ cell, distance: dist, target: cell.unit });
-                        } else if (cell.state === CellState.PLAYER_CASTLE) {
-                            targets.push({ cell, distance: dist, isCastle: true });
-                        }
-                    }
-                }
-            }
-        }
-        
-        return targets;
-    }
-
-    selectTargetByPriority(unit, targets) {
+        const targets = this.findBuildTargets();
         if (targets.length === 0) return null;
         
-        switch (unit.attackPriority) {
-            case 'nearest':
-                return targets.sort((a, b) => a.distance - b.distance)[0];
-            case 'farthest':
-                return targets.sort((a, b) => b.distance - a.distance)[0];
-            case 'weakest':
-                return targets.sort((a, b) => {
-                    if (a.isCastle) return -1;
-                    if (b.isCastle) return 1;
-                    return a.target.hp - b.target.hp;
-                })[0];
-            case 'strongest':
-                return targets.sort((a, b) => {
-                    if (a.isCastle) return -1;
-                    if (b.isCastle) return 1;
-                    return b.target.hp - a.target.hp;
-                })[0];
-            default:
-                return targets[0];
-        }
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        return this.spawnUnit(target);
     }
 
-    selectMoveTarget(unit, moveTargets) {
-        if (moveTargets.length === 0) return null;
-        
-        const playerCastle = this.gameMap.playerCastle;
-        
-        moveTargets.sort((a, b) => {
-            const distA = this.gameMap.getManhattanDistance(a.x, a.y, playerCastle.x, playerCastle.y);
-            const distB = this.gameMap.getManhattanDistance(b.x, b.y, playerCastle.x, playerCastle.y);
-            return distA - distB;
-        });
-        
-        return moveTargets[0];
-    }
+    processUnit(unit, currentTime, playerUnits, enemyCastle) {
+        if (unit.isBuilding) return null;
+        if (!unit.canAct(currentTime)) return null;
 
-    processUnit(unit, currentTime) {
-        if (!unit.canAct(currentTime, 600)) return null;
+        const enemies = playerUnits;
         
-        const attackTargets = this.getAttackTargets(unit);
-        const target = this.selectTargetByPriority(unit, attackTargets);
-        
-        if (target) {
-            unit.markAction(currentTime);
-            if (target.isCastle) {
-                return { type: 'attack_castle', unit, target: target.cell };
+        // 尝试攻击
+        if (unit.attack > 0 && enemies.length > 0) {
+            const target = this.battle.findTarget(unit, enemies);
+            
+            if (target) {
+                const dist = this.map.getDistance(unit.x, unit.y, target.x, target.y);
+                
+                if (dist <= unit.attackRange) {
+                    // 在攻击范围内，直接攻击
+                    if (unit.aoeRange > 0) {
+                        return { type: 'aoe_attack', unit, target, aoeRange: unit.aoeRange };
+                    }
+                    return { type: 'attack', unit, target };
+                } else {
+                    // 不在攻击范围内，移动
+                    const moveTarget = this.battle.findMoveTarget(unit, target);
+                    if (moveTarget) {
+                        return { type: 'move', unit, target: moveTarget };
+                    }
+                }
             } else {
-                return { type: 'attack', unit, target: target.target };
+                // 无优先目标，攻击城堡
+                const dist = this.map.getDistance(unit.x, unit.y, enemyCastle.x, enemyCastle.y);
+                if (dist <= unit.attackRange) {
+                    return { type: 'attack_castle', unit, target: enemyCastle };
+                } else {
+                    const moveTarget = this.battle.findMoveTarget(unit, enemyCastle);
+                    if (moveTarget) {
+                        return { type: 'move', unit, target: moveTarget };
+                    }
+                }
             }
         }
         
-        const moveTargets = this.getMoveTargets(unit);
-        const moveTarget = this.selectMoveTarget(unit, moveTargets);
+        // 移动向城堡
+        if (unit.moveSpeed > 0) {
+            const moveTarget = this.battle.findMoveTarget(unit, enemyCastle);
+            if (moveTarget) {
+                return { type: 'move', unit, target: moveTarget };
+            }
+        }
         
-        if (moveTarget) {
-            unit.markAction(currentTime);
-            return { type: 'move', unit, target: moveTarget };
+        return null;
+    }
+
+    processSummoner(unit, currentTime, allUnits) {
+        if (!unit.canSummon) return null;
+        if (!unit.canSummonUnit(currentTime)) return null;
+        
+        const emptyCells = [];
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = unit.x + dx;
+                const ny = unit.y + dy;
+                const cell = this.map.getCell(nx, ny);
+                if (cell && !cell.unit) {
+                    emptyCells.push(cell);
+                }
+            }
+        }
+        
+        if (emptyCells.length > 0) {
+            const targetCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            const skeleton = createSkeleton(unit.owner, unit.raceId, targetCell.x, targetCell.y);
+            this.map.setUnit(targetCell.x, targetCell.y, skeleton);
+            unit.markSummon(currentTime);
+            return { type: 'summon', unit, target: skeleton };
         }
         
         return null;

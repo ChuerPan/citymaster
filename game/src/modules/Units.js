@@ -1,113 +1,185 @@
-export const UNITS = {
-    infantry: {
-        id: 'infantry',
-        name: '步兵',
+// 角色模板
+export const UNIT_TEMPLATES = {
+    // 近战兵
+    warrior: {
+        id: 'warrior',
+        name: '近战兵',
         icon: '⚔️',
-        hp: 80,
-        attack: 20,
-        defense: 5,
-        attackRange: 1,
-        moveRange: 2,
-        attackPriority: 'nearest',
-        cost: 10,
-        description: '近战步兵，攻击力平衡'
-    },
-    archer: {
-        id: 'archer',
-        name: '弓箭手',
-        icon: '🏹',
         hp: 50,
-        attack: 25,
+        attack: 2,
         defense: 2,
-        attackRange: 4,
-        moveRange: 2,
-        attackPriority: 'farthest',
-        cost: 15,
-        description: '远程单位，优先攻击远处敌人'
-    },
-    cavalry: {
-        id: 'cavalry',
-        name: '骑兵',
-        icon: '🐴',
-        hp: 100,
-        attack: 25,
-        defense: 8,
         attackRange: 1,
-        moveRange: 4,
+        attackSpeed: 1000,      // 1秒1下
+        moveSpeed: 8,          // 移动速度8
         attackPriority: 'nearest',
-        cost: 20,
-        description: '高机动性近战单位'
+        isBuilding: false,
+        canSummon: false
     },
-    mage: {
-        id: 'mage',
-        name: '法师',
-        icon: '🧙',
-        hp: 60,
-        attack: 35,
-        defense: 1,
-        attackRange: 3,
-        moveRange: 2,
-        attackPriority: 'weakest',
-        cost: 25,
-        description: '魔法攻击，优先攻击血量低的'
-    },
+    
+    // 近战肉盾兵
     tank: {
         id: 'tank',
-        name: '盾兵',
+        name: '肉盾兵',
         icon: '🛡️',
-        hp: 150,
-        attack: 15,
-        defense: 15,
+        hp: 100,
+        attack: 1,
+        defense: 4,
         attackRange: 1,
-        moveRange: 1,
+        attackSpeed: 2000,      // 2秒1下
+        moveSpeed: 5,          // 移动速度5
         attackPriority: 'nearest',
-        cost: 18,
-        description: '高防御单位，保护其他单位'
+        isBuilding: false,
+        canSummon: false
     },
-    assassin: {
-        id: 'assassin',
-        name: '刺客',
-        icon: '🗡️',
-        hp: 40,
-        attack: 40,
-        defense: 2,
+    
+    // 远程兵
+    archer: {
+        id: 'archer',
+        name: '远程兵',
+        icon: '🏹',
+        hp: 30,
+        attack: 1,
+        defense: 1,
+        attackRange: 5,
+        attackSpeed: 1000,      // 1秒1下
+        moveSpeed: 7,          // 移动速度7
+        attackPriority: 'farthest',
+        isBuilding: false,
+        canSummon: false
+    },
+    
+    // 魔法兵
+    mage: {
+        id: 'mage',
+        name: '魔法兵',
+        icon: '🔮',
+        hp: 20,
+        attack: 1,
+        defense: 1,
+        attackRange: 4,
+        attackSpeed: 2000,      // 2秒1下
+        moveSpeed: 5,          // 移动速度5
+        attackPriority: 'summon', // 优先召唤物
+        aoeRange: 2,           // 2格范围伤害
+        isBuilding: false,
+        canSummon: false
+    },
+    
+    // 召唤兵
+    summoner: {
+        id: 'summoner',
+        name: '召唤兵',
+        icon: '💫',
+        hp: 10,
+        attack: 1,
+        defense: 1,
         attackRange: 1,
-        moveRange: 3,
-        attackPriority: 'strongest',
-        cost: 22,
-        description: '高爆发，优先攻击高血量'
+        attackSpeed: 3000,      // 3秒1下
+        moveSpeed: 5,          // 移动速度5
+        attackPriority: 'nearest',
+        isBuilding: false,
+        canSummon: true,
+        summonCooldown: 5000,   // 5秒召唤1只
+        summonType: 'skeleton'
     }
 };
 
-export const BUILDINGS = {
+// 建筑模板
+export const BUILDING_TEMPLATES = {
+    // 主城
+    castle: {
+        id: 'castle',
+        name: '主城',
+        icon: '🏰',
+        hp: 500,
+        attack: 1,
+        defense: 1,
+        attackRange: 5,
+        attackSpeed: 1000,      // 1秒1下
+        attackPriority: 'nearest',
+        isBuilding: true,
+        goldInterval: 5000,     // 5秒
+        goldAmount: 10          // 产出10金币
+    },
+    
+    // 矿场
     mine: {
         id: 'mine',
         name: '矿场',
         icon: '⛏️',
-        goldPerSecond: 5,
-        cost: 30,
-        description: '每秒产生5金币'
+        hp: 40,
+        attack: 0,
+        defense: 1,
+        attackRange: 0,
+        attackSpeed: 0,
+        isBuilding: true,
+        goldInterval: 5000,     // 5秒
+        goldAmount: 100        // 产出100金币
+    },
+    
+    // 箭塔
+    tower: {
+        id: 'tower',
+        name: '箭塔',
+        icon: '🗼',
+        hp: 10,
+        attack: 1,
+        defense: 1,
+        attackRange: 5,
+        attackSpeed: 1000,      // 1秒1下
+        attackPriority: 'nearest',
+        isBuilding: true
     }
 };
 
+// 骷髅（召唤物）
+export const SKELETON = {
+    id: 'skeleton',
+    name: '骷髅',
+    icon: '💀',
+    hp: 5,
+    attack: 1,
+    defense: 1,
+    attackRange: 1,
+    attackSpeed: 1000,      // 1秒1下
+    moveSpeed: 10,         // 移动速度10
+    attackPriority: 'nearest',
+    isBuilding: false,
+    isSummoned: true
+};
+
 export class Unit {
-    constructor(unitType, owner, x, y) {
-        const template = UNITS[unitType];
-        this.id = `${unitType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        this.type = unitType;
+    constructor(template, owner, raceId) {
+        this.id = `${template.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        this.templateId = template.id;
         this.name = template.name;
         this.icon = template.icon;
         this.owner = owner;
+        this.raceId = raceId;
+        
         this.maxHp = template.hp;
         this.hp = template.hp;
         this.attack = template.attack;
         this.defense = template.defense;
         this.attackRange = template.attackRange;
-        this.moveRange = template.moveRange;
+        this.attackSpeed = template.attackSpeed;
+        this.moveSpeed = template.moveSpeed || 0;
         this.attackPriority = template.attackPriority;
-        this.x = x;
-        this.y = y;
+        this.aoeRange = template.aoeRange || 0;
+        this.canSummon = template.canSummon || false;
+        this.summonType = template.summonType || null;
+        this.summonCooldown = template.summonCooldown || 0;
+        this.isBuilding = template.isBuilding || false;
+        this.isSummoned = template.isSummoned || false;
+        
+        this.goldInterval = template.goldInterval || 0;
+        this.goldAmount = template.goldAmount || 0;
+        
+        this.x = 0;
+        this.y = 0;
         this.lastActionTime = 0;
+        this.lastSummonTime = 0;
+        this.lastGoldTime = 0;
     }
 
     takeDamage(damage) {
@@ -124,34 +196,59 @@ export class Unit {
         return Math.max(0, (this.hp / this.maxHp) * 100);
     }
 
-    canAct(currentTime, cooldown = 500) {
-        return currentTime - this.lastActionTime >= cooldown;
+    canAct(currentTime) {
+        return currentTime - this.lastActionTime >= this.attackSpeed;
+    }
+
+    canSummonUnit(currentTime) {
+        if (!this.canSummon) return false;
+        return currentTime - this.lastSummonTime >= this.summonCooldown;
+    }
+
+    canProduceGold(currentTime) {
+        if (this.goldInterval === 0) return false;
+        return currentTime - this.lastGoldTime >= this.goldInterval;
     }
 
     markAction(currentTime) {
         this.lastActionTime = currentTime;
     }
+
+    markSummon(currentTime) {
+        this.lastSummonTime = currentTime;
+    }
+
+    markGoldProduction(currentTime) {
+        this.lastGoldTime = currentTime;
+    }
 }
 
-export class Building {
-    constructor(buildType, owner, x, y) {
-        const template = BUILDINGS[buildType];
-        this.id = `${buildType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        this.type = buildType;
-        this.name = template.name;
-        this.icon = template.icon;
-        this.owner = owner;
-        this.x = x;
-        this.y = y;
-        this.goldPerSecond = template.goldPerSecond;
-        this.lastProduceTime = 0;
-    }
+// 工厂函数创建单位
+export function createUnit(templateId, owner, raceId, x, y) {
+    const template = UNIT_TEMPLATES[templateId];
+    if (!template) return null;
+    
+    const unit = new Unit(template, owner, raceId);
+    unit.x = x;
+    unit.y = y;
+    return unit;
+}
 
-    produceGold(currentTime) {
-        if (currentTime - this.lastProduceTime >= 1000) {
-            this.lastProduceTime = currentTime;
-            return this.goldPerSecond;
-        }
-        return 0;
-    }
+// 工厂函数创建建筑
+export function createBuilding(templateId, owner, raceId, x, y) {
+    const template = BUILDING_TEMPLATES[templateId];
+    if (!template) return null;
+    
+    const building = new Unit(template, owner, raceId);
+    building.x = x;
+    building.y = y;
+    return building;
+}
+
+// 创建骷髅
+export function createSkeleton(owner, raceId, x, y) {
+    const skeleton = new Unit(SKELETON, owner, raceId);
+    skeleton.x = x;
+    skeleton.y = y;
+    return skeleton;
 }

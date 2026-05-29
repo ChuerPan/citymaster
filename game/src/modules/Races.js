@@ -1,30 +1,34 @@
 export const RACES = {
     human: {
+        id: 'human',
         name: '人族',
         description: '均衡发展，攻守兼备',
-        icon: '👤',
-        units: ['swordsman', 'archer', 'knight', 'mage']
+        icon: '👤'
     },
     orc: {
+        id: 'orc',
         name: '兽族',
         description: '勇猛善战，攻击力强',
-        icon: '👹',
-        units: ['grunt', 'troll', 'orc_warrior', 'shaman']
+        icon: '👹'
+    },
+    undead: {
+        id: 'undead',
+        name: '亡灵族',
+        description: '召唤骷髅，源源不断',
+        icon: '💀'
     },
     elf: {
-        name: '精灵',
+        id: 'elf',
+        name: '精灵族',
         description: '敏捷灵活，远程攻击',
-        icon: '🧝',
-        units: ['ranger', 'hunter', 'druid', 'phoenix']
-    },
-    night: {
-        name: '暗夜',
-        description: '神秘强大，魔法攻击',
-        icon: '🌙',
-        units: ['shadow', 'lich', 'demon', 'dragon']
+        icon: '🧝'
     }
 };
 
 export function getRaceData(raceId) {
     return RACES[raceId] || RACES.human;
+}
+
+export function getAllRaceIds() {
+    return Object.keys(RACES);
 }
